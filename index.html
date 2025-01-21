@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mocha@11.0.1/mocha.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <script type="module" src="./components/resource-gallery.js"></script>
+    <title>JA Developer Challenge</title>
+</head>
+<body>
+    <main class="container">
+        <div class="row justify-content-between">
+            <div class="col-4">
+                <h4 class="h4 page-heading">Your Resources</h2>
+            </div>
+            <div class="col-4 d-flex justify-content-end gap-3">
+                <i class="tooltip-icons bi bi-pencil"></i>
+                <i class="tooltip-icons bi bi-plus-lg"></i>
+                <i class="tooltip-icons bi bi-list-task"></i>
+                <i class="tooltip-icons bi bi-sort-down-alt"></i>
+                <i id="testing-icon" class="tooltip-icons bi bi-file-play-fill" data-bs-toggle="offcanvas" href="#offcanvasExample" role="button" aria-controls="offcanvasExample">
+                </i>
+            </div>
+        </div>
+        <div class="row">
+            <small class="text-muted">You may add or edit your existing resources</small>
+        </div>
+        <resource-gallery id="resource-gallery"></resource-gallery>
+        <div class="offcanvas offcanvas-start bg-secondary" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasExampleLabel">Tests</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <div>
+                <div id="mocha"></div>
+            </div>
+          </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script type="module">
+        import mocha from 'https://cdn.jsdelivr.net/npm/mocha@11.0.1/+esm';
+        import { expect } from 'https://cdn.jsdelivr.net/npm/chai@5.1.1/+esm';
+
+        mocha.setup('bdd');
+
+        let resourceGallery;
+        before(() => {
+            resourceGallery = document.getElementById('resource-gallery');
+        })
+
+        describe('Resource Gallery', () => {
+            it('should display category chips', () => { 
+                const categoryChips = resourceGallery.shadowRoot.querySelectorAll('.category-chips');
+                expect(categoryChips.length).to.be.greaterThan(0);
+            });
+
+            it('should display resource cards', () => { 
+                const resourceCards = resourceGallery.shadowRoot.querySelectorAll('.resource-card');
+                expect(resourceCards.length).to.be.greaterThan(0);
+            });
+
+            it('should display resource cards based on active category chip', async () => { 
+                const categoryChips = resourceGallery.shadowRoot.querySelectorAll('.category-chips');
+                // Need to use Array.from so the "find" method can be used.
+                const categoryChipsArr = Array.from(categoryChips);
+                const chip = categoryChipsArr.find(card => card.getAttribute('category') === 'Engineering');
+                chip.click();
+                await resourceGallery.updateComplete;
+                const resourceCards = resourceGallery.shadowRoot.querySelectorAll('.resource-card');
+                resourceCards.forEach(resource => {
+                    expect(resource.getAttribute('category')).to.equal('Engineering')
+                })
+            });
+
+            it('should dispslay more resource cards when "Show More" is clicked', async () => {
+                const showMore = resourceGallery.shadowRoot.getElementById('show-more');
+                const categoryChips = resourceGallery.shadowRoot.querySelectorAll('.category-chips');
+                // Need to use Array.from so the "find" method can be used.
+                const categoryChipsArr = Array.from(categoryChips);
+                const chip = categoryChipsArr.find(card => card.getAttribute('category') === 'ALL');
+                chip.click();
+                showMore.click();
+                await resourceGallery.updateComplete;
+                const resourceCards = resourceGallery.shadowRoot.querySelectorAll('.resource-card');
+                // Greater than 6 indicates at least one more resource was added/shown.
+                expect(resourceCards.length).to.be.greaterThan(6);
+            })
+        });
+
+        const testingIcon = document.getElementById('testing-icon');
+        testingIcon.addEventListener('click', () => mocha.run());
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+body {
+    background-color: white !important;
+    color: black !important;
+}
+
+.page-heading {
+    color: rgb(15,77,136)
+}
+.tooltip-icons:hover {
+    color: rgb(103,219,177);
+    cursor: pointer;
+}
